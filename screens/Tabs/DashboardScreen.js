@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, FlatList } from 'react-native';
+import { StyleSheet, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import EditScreenInfo from '../../components/EditScreenInfo';
 import { View } from '../../components/Themed';
@@ -16,16 +17,22 @@ export default class TabOneScreen extends Component {
     super(props);
 
     this.state = {
+      userId: null,
       allRequest: [],
       fencedRequest: [],
       currentLocation: {
         longitude: 'unknown', //Initial Longitude
         latitude: 'unknown', //Initial Latitude
       },
+      loading: true
     }
   }
 
   componentDidMount = async () => {
+    await AsyncStorage.getItem('userId').then(result => {
+      result ? this.setState({ userId: result }) : this.props.navigation.navigate('Login');
+    })
+
     await navigator.geolocation.getCurrentPosition(
       //Will give you the current location
       position => {
@@ -71,7 +78,7 @@ export default class TabOneScreen extends Component {
         }).then(result => {
             result.data.data.AllTransactions.reverse().map(res => {
               
-              var maxDistanceInKM = 50; // 500m distance
+              var maxDistanceInKM = 10; // 500m distance
               // startPoint - center of perimeter
               // points - array of points
               // maxDistanceInKM - max point distance from startPoint in KM's
@@ -92,7 +99,8 @@ export default class TabOneScreen extends Component {
                     Notes: res.Notes,
                     Status: res.Status,
                     _id: res._id
-                  }]
+                  }],
+                  loading: false
                 })
               : null
             })
@@ -107,6 +115,11 @@ export default class TabOneScreen extends Component {
   }
 
   _reload = () => {
+    this.setState({
+      allRequest: [],
+      loading: true
+    });
+
     axios({
       url: 'https://serene-cliffs-80945.herokuapp.com/api',
       method: 'POST',
@@ -134,10 +147,33 @@ export default class TabOneScreen extends Component {
           `
       }
     }).then(result => { 
-        this.setState({ 
-            allRequest: result.data.data.AllTransactions.reverse()
+        result.data.data.AllTransactions.reverse().map(res => {
+                
+          var maxDistanceInKM = 10; // 500m distance
+          // startPoint - center of perimeter
+          // points - array of points
+          // maxDistanceInKM - max point distance from startPoint in KM's
+          // result - array of points inside the max distance
+          var result = Geofence.filterByProximity(this.state.currentLocation, [{latitude: res.PickLat, longitude: res.PickLong}], maxDistanceInKM);
+
+          result[0] ? 
+            this.setState({
+              allRequest: [...this.state.allRequest, {
+                UserId: res.UserId,
+                DropLat: res.DropLat,
+                DropLong: res.DropLong,
+                DropAddress: res.DropAddress,
+                PickLat: res.PickLat,
+                PickLong: res.PickLong,
+                HubLocated: res.HubLocated,
+                Notes: res.Notes,
+                Status: res.Status,
+                _id: res._id
+              }],
+              loading: false
+            })
+          : null
         })
-        console.log(this.state.allRequest)
     }).catch(err => {
         alert(err)
     })
@@ -150,7 +186,7 @@ export default class TabOneScreen extends Component {
       data: {
           query: `
             mutation {
-              EditStatus(account: "${id}", status: "Accepted"){
+              EditStatus(account: "${id}", status: "Accepted", rider: "${this.state.userId}"){
                 Status
               }  
             }
@@ -187,61 +223,68 @@ export default class TabOneScreen extends Component {
 
     return (
       <View style={styles.container}>
-        <Button
-          title='refresh'
-          onPress={() => this._reload()}
-        />
-        <FlatList
-          style={{ paddingBottom: 10 }}
-          data={this.state.allRequest}
-          renderItem={({item}) => 
-              <Card containerStyle={styles.Cards}>
-                <Card.Title><Text h1>{ item.UserId.FName } { item.UserId.LName }</Text> {<Text>{item.Status}</Text>}</Card.Title>
-                  <Card.Divider/>
-                  {/* <Text style={{marginBottom: 10, color: 'black'}}>{item.HubLocated}</Text> */}
-                  {/* <Text style={{marginBottom: 10, color: 'black'}}>{JSON.stringify(item)}</Text> */}
-                  <Text h4 style={{ color: 'black'}}>Hub: {item.HubLocated}</Text>
-                  <Text h4 style={{ color: 'black'}}>Email: {item.UserId.Email}</Text>
-                  <Text h4 style={{ color: 'black'}}>Extra Notes: {item.Notes == "null" ? "No extra notes" : item.Notes}</Text>
+        {
+            this.state.loading ? 
+              <Card><ActivityIndicator></ActivityIndicator></Card> 
+            :
+              <View>
+                <Button
+                  title='refresh'
+                  onPress={() => this._reload()}
+                />
+                <FlatList
+                  style={{ paddingBottom: 10 }}
+                  data={this.state.allRequest}
+                  renderItem={({item}) => 
+                      <Card containerStyle={styles.Cards}>
+                        <Card.Title><Text h1>{ item.UserId.FName } { item.UserId.LName }</Text> {<Text>{item.Status}</Text>}</Card.Title>
+                          <Card.Divider/>
+                          {/* <Text style={{marginBottom: 10, color: 'black'}}>{item.HubLocated}</Text> */}
+                          {/* <Text style={{marginBottom: 10, color: 'black'}}>{JSON.stringify(item)}</Text> */}
+                          <Text h4 style={{ color: 'black'}}>Hub: {item.HubLocated}</Text>
+                          <Text h4 style={{ color: 'black'}}>Email: {item.UserId.Email}</Text>
+                          <Text h4 style={{ color: 'black'}}>Extra Notes: {item.Notes == "null" ? "No extra notes" : item.Notes}</Text>
 
-                  {item.Status == 'Accepted' ?
-                      <Card>
-                        <Text style={{marginBottom: 10, color: 'black'}}>{item.PickAddress}</Text>
-                        <NavigationApps
-                            iconSize={50}
-                            row
-                            address='some default address to navigate' // address to navigate by for all apps 
-                            waze={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress}} // specific settings for waze
-                        />
-                        <Text style={{marginBottom: 10, color: 'black'}}>{item.DropAddress}</Text>
-                        <NavigationApps
-                            iconSize={50}
-                            row
-                            address='some default address to navigate' // address to navigate by for all apps 
-                            waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress}} // specific settings for waze
-                        />
+                          {item.Status == 'Accepted' ?
+                              <Card>
+                                <Text style={{marginBottom: 10, color: 'black'}}>{item.PickAddress}</Text>
+                                <NavigationApps
+                                    iconSize={50}
+                                    row
+                                    address='some default address to navigate' // address to navigate by for all apps 
+                                    waze={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress}} // specific settings for waze
+                                />
+                                <Text style={{marginBottom: 10, color: 'black'}}>{item.DropAddress}</Text>
+                                <NavigationApps
+                                    iconSize={50}
+                                    row
+                                    address='some default address to navigate' // address to navigate by for all apps 
+                                    waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress}} // specific settings for waze
+                                />
+                              </Card>
+                            :
+                              null
+                          }
+
+                          {
+                            item.Status == 'Pending' ?
+                              <Button
+                                title='Accept'
+                                onPress={() => this._accept(item._id)}
+                              />
+                              :
+                                item.Status == 'Accepted' ?
+                                  <Button
+                                    title='Finish Trip'
+                                    onPress={() => this._finishTrip(item._id)}
+                                  />
+                                : null
+                          }
                       </Card>
-                    :
-                      null
                   }
-
-                  {
-                    item.Status == 'Pending' ?
-                      <Button
-                        title='Accept'
-                        onPress={() => this._accept(item._id)}
-                      />
-                      :
-                        item.Status == 'Accepted' ?
-                          <Button
-                            title='Finish Trip'
-                            onPress={() => this._finishTrip(item._id)}
-                          />
-                        : null
-                  }
-              </Card>
-          }
-        />
+                />
+              </View>
+        }
       </View>
     );
   }

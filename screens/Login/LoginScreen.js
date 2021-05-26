@@ -55,11 +55,6 @@ class Login extends Component {
                                 title="Login"
                                 onPress={this._signin}
                             />
-                            <Button
-                                type="clear"
-                                title="SignUp"
-                                onPress={() => this.props.navigation.navigate('Registration')}
-                            />
                         </View>
                 }
             </View>
@@ -87,10 +82,23 @@ class Login extends Component {
                 `
             }
         }).then(result => {
-            AsyncStorage.setItem('userId', result.data.data.login.userId);
-            AsyncStorage.setItem('userType', result.data.data.login.userType);
+            if(result.data.data.login.userType == 'rider'){
+                AsyncStorage.setItem('userId', result.data.data.login.userId);
+                AsyncStorage.setItem('userType', result.data.data.login.userType);
+                
+                this.setState({
+                    loading: false
+                });
 
-            this.props.navigation.navigate('Root');
+                this.props.navigation.navigate('Root');
+            } else {
+                this.setState({
+                    loading: false
+                });
+                
+                alert('Not Authorized to Login');
+            }
+            
         }).catch(err => {
                 this.setState({
                     loading: false
