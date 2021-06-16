@@ -206,7 +206,7 @@ export default class TabOneScreen extends Component {
       data: {
           query: `
             mutation {
-              EditStatus(account: "${id}", status: "Completed"){
+              EditStatus(account: "${id}", status: "Completed", rider: "${this.state.userId}"){
                 Status
               }  
             }
