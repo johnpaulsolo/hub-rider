@@ -71,6 +71,9 @@ export default class TabOneScreen extends Component {
                     HubLocated
                     Notes
                     Status
+                    Driver{
+                      _id
+                    }
                   }
                 }
               `
@@ -98,6 +101,7 @@ export default class TabOneScreen extends Component {
                     HubLocated: res.HubLocated,
                     Notes: res.Notes,
                     Status: res.Status,
+                    Driver: res.Driver,
                     _id: res._id
                   }],
                   loading: false
@@ -142,6 +146,9 @@ export default class TabOneScreen extends Component {
                 HubLocated
                 Notes
                 Status
+                Driver{
+                  _id
+                }
               }
             }
           `
@@ -168,6 +175,7 @@ export default class TabOneScreen extends Component {
                 HubLocated: res.HubLocated,
                 Notes: res.Notes,
                 Status: res.Status,
+                Driver: res.Driver,
                 _id: res._id
               }],
               loading: false
@@ -236,51 +244,51 @@ export default class TabOneScreen extends Component {
                   style={{ paddingBottom: 10 }}
                   data={this.state.allRequest}
                   renderItem={({item}) => 
-                      <Card containerStyle={styles.Cards}>
-                        <Card.Title><Text h1>{ item.UserId.FName } { item.UserId.LName }</Text> {<Text>{item.Status}</Text>}</Card.Title>
-                          <Card.Divider/>
-                          {/* <Text style={{marginBottom: 10, color: 'black'}}>{item.HubLocated}</Text> */}
-                          {/* <Text style={{marginBottom: 10, color: 'black'}}>{JSON.stringify(item)}</Text> */}
-                          <Text h4 style={{ color: 'black'}}>Hub: {item.HubLocated}</Text>
-                          <Text h4 style={{ color: 'black'}}>Email: {item.UserId.Email}</Text>
-                          <Text h4 style={{ color: 'black'}}>Extra Notes: {item.Notes == "null" ? "No extra notes" : item.Notes}</Text>
+                        <Card containerStyle={styles.Cards}>
+                          <Card.Title><Text h1>{ item.UserId.FName } { item.UserId.LName }</Text> {<Text>{item.Status}</Text>}</Card.Title>
+                            <Card.Divider/>
+                            {/* <Text style={{marginBottom: 10, color: 'black'}}>{item.HubLocated}</Text> */}
+                            {/* <Text style={{marginBottom: 10, color: 'black'}}>{JSON.stringify(item)}</Text> */}
+                            <Text h4 style={{ color: 'black'}}>Hub: {item.HubLocated}</Text>
+                            <Text h4 style={{ color: 'black'}}>Email: {item.UserId.Email}</Text>
+                            <Text h4 style={{ color: 'black'}}>Extra Notes: {item.Notes == "null" ? "No extra notes" : item.Notes}</Text>
 
-                          {item.Status == 'Accepted' ?
-                              <Card>
-                                <Text style={{marginBottom: 10, color: 'black'}}>{item.PickAddress}</Text>
-                                <NavigationApps
-                                    iconSize={50}
-                                    row
-                                    address='some default address to navigate' // address to navigate by for all apps 
-                                    waze={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress}} // specific settings for waze
-                                />
-                                <Text style={{marginBottom: 10, color: 'black'}}>{item.DropAddress}</Text>
-                                <NavigationApps
-                                    iconSize={50}
-                                    row
-                                    address='some default address to navigate' // address to navigate by for all apps 
-                                    waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress}} // specific settings for waze
-                                />
-                              </Card>
-                            :
-                              null
-                          }
-
-                          {
-                            item.Status == 'Pending' ?
-                              <Button
-                                title='Accept'
-                                onPress={() => this._accept(item._id)}
-                              />
-                              :
-                                item.Status == 'Accepted' ?
-                                  <Button
-                                    title='Finish Trip'
-                                    onPress={() => this._finishTrip(item._id)}
+                            {item.Status == 'Accepted' ?
+                                <Card>
+                                  <Text style={{marginBottom: 10, color: 'black'}}>{item.PickAddress}</Text>
+                                  <NavigationApps
+                                      iconSize={50}
+                                      row
+                                      address='some default address to navigate' // address to navigate by for all apps 
+                                      waze={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress}} // specific settings for waze
                                   />
-                                : null
-                          }
-                      </Card>
+                                  <Text style={{marginBottom: 10, color: 'black'}}>{item.DropAddress}</Text>
+                                  <NavigationApps
+                                      iconSize={50}
+                                      row
+                                      address='some default address to navigate' // address to navigate by for all apps 
+                                      waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress}} // specific settings for waze
+                                  />
+                                </Card>
+                              :
+                                null
+                            }
+
+                            {
+                              item.Status == 'Pending' ?
+                                <Button
+                                  title='Accept'
+                                  onPress={() => this._accept(item._id)}
+                                />
+                                :
+                                  item.Status == 'Accepted' ?
+                                    <Button
+                                      title='Finish Trip'
+                                      onPress={() => this._finishTrip(item._id)}
+                                    />
+                                  : null
+                            }
+                        </Card>
                   }
                 />
               </View>
