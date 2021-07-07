@@ -96,6 +96,7 @@ export default class TabOneScreen extends Component {
                     DropLat: res.DropLat,
                     DropLong: res.DropLong,
                     DropAddress: res.DropAddress,
+                    PickAddress: res.PickAddress,
                     PickLat: res.PickLat,
                     PickLong: res.PickLong,
                     HubLocated: res.HubLocated,
@@ -170,6 +171,7 @@ export default class TabOneScreen extends Component {
                 DropLat: res.DropLat,
                 DropLong: res.DropLong,
                 DropAddress: res.DropAddress,
+                PickAddress: res.PickAddress,
                 PickLat: res.PickLat,
                 PickLong: res.PickLong,
                 HubLocated: res.HubLocated,
@@ -259,15 +261,17 @@ export default class TabOneScreen extends Component {
                                   <NavigationApps
                                       iconSize={50}
                                       row
-                                      address='some default address to navigate' // address to navigate by for all apps 
-                                      waze={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress}} // specific settings for waze
+                                      address={item.PickAddress} // address to navigate by for all apps 
+                                      googleMaps={{lat: item.PickLat, lon: item.PickLong, action: actions.navigateByAddress, travelMode: 'driving'}}
+                                      waze={{address: item.PickAddress, lat: item.PickLat, lon: item.PickLong, action: actions.navigateByLatAndLon, travelMode: 'driving'}} // specific settings for waze
                                   />
                                   <Text style={{marginBottom: 10, color: 'black'}}>{item.DropAddress}</Text>
                                   <NavigationApps
                                       iconSize={50}
                                       row
-                                      address='some default address to navigate' // address to navigate by for all apps 
-                                      waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress}} // specific settings for waze
+                                      address={item.DropAddress} // address to navigate by for all apps 
+                                      googleMaps={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByAddress, travelMode: 'driving'}}
+                                      waze={{address: item.DropAddress, lat: item.DropLat, lon: item.DropLong, action: actions.navigateByLatAndLon, travelMode: 'driving'}} // specific settings for waze
                                   />
                                 </Card>
                               :

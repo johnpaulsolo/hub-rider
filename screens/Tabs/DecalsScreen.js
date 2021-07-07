@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Image, ScrollView} from 'react-native';
-import { Input, Button, Text, Header } from 'react-native-elements';
+import { Input, Button, Text, Header, Card } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
@@ -72,27 +72,33 @@ class Login extends Component {
         />
           {decalEnable ?
             <ScrollView>
-                <Text h3>Take a picture of your front vehicle with plate no.</Text>
+                <Card>
+                  <Text h3>Take a picture of your front and back vehicle with plate no.</Text>
+                </Card>
 
-                <Button 
-                    title="Front Photo"
-                    type="clear"
-                    onPress={this._openCamera}
-                />
+                <Card>
+                  <Button 
+                      title="Front Photo"
+                      type="clear"
+                      onPress={this._openCamera}
+                  />
 
-                <View style={styles.containerRow}>
-                {image && <Image source={{ uri: 'data:image/jpg;base64,'+ image }} style={{ width: 400, height: 400 }} />} 
-                </View>
+                  <View style={styles.containerRow}>
+                  {image && <Image source={{ uri: 'data:image/jpg;base64,'+ image }} style={styles.picture} />} 
+                  </View>
+                </Card>
 
-                <Button 
-                    title="Back Photo"
-                    type="clear"
-                    onPress={this._openCameraSecond}
-                />
+                <Card>
+                  <Button 
+                      title="Back Photo"
+                      type="clear"
+                      onPress={this._openCameraSecond}
+                  />
 
-                <View style={styles.containerRow}>
-                {imageBack && <Image source={{ uri: 'data:image/jpg;base64,'+ imageBack }} style={{ width: 400, height: 400 }} />} 
-                </View>
+                  <View style={styles.containerRow}>
+                  {imageBack && <Image source={{ uri: 'data:image/jpg;base64,'+ imageBack }} style={styles.picture} />} 
+                  </View>
+                </Card>
 
                 <Button
                     type='outline'
@@ -183,7 +189,12 @@ const styles = StyleSheet.create({
   },
   containerRow: {
       flexDirection: 'row'
-  }
+  },
+  picture: {
+    width: 350,
+    height: 300,
+    resizeMode: 'cover',
+  },
 });
 
 export default Login;
