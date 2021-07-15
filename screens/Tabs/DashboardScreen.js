@@ -20,6 +20,7 @@ export default class TabOneScreen extends Component {
 
     this.state = {
       userId: null,
+      hubStation: null,
       allRequest: [],
       fencedRequest: [],
       currentLocation: {
@@ -48,6 +49,26 @@ export default class TabOneScreen extends Component {
       url: 'https://serene-cliffs-80945.herokuapp.com/api',
       method: 'POST',
       data: {
+        query: `
+          {
+            Profile(userId:"${this.state.userId}") {
+              Hub
+            }
+          }
+        `
+      }
+    }).then(result => {
+      this.setState({
+        hubStation: result.data.data.Profile.Hub
+      })
+    }).catch(err => {
+      alert(err)
+    });
+
+    await axios({
+      url: 'https://serene-cliffs-80945.herokuapp.com/api',
+      method: 'POST',
+      data: {
           query: `
             {
               DriverTrip(userId:"${this.state.userId}"){
@@ -58,7 +79,6 @@ export default class TabOneScreen extends Component {
                 DropLong
                 PickLat
                 PickLong
-                HubLocated
                 Notes
                 UserId {
                   FName
@@ -123,7 +143,6 @@ export default class TabOneScreen extends Component {
                     DropLong
                     PickLat
                     PickLong
-                    HubLocated
                     Notes
                     Status
                     Driver{
@@ -159,7 +178,6 @@ export default class TabOneScreen extends Component {
                     PickAddress: res.PickAddress,
                     PickLat: res.PickLat,
                     PickLong: res.PickLong,
-                    HubLocated: res.HubLocated,
                     Notes: res.Notes,
                     Status: res.Status,
                     Driver: res.Driver,
@@ -207,7 +225,6 @@ export default class TabOneScreen extends Component {
                 DropLong
                 PickLat
                 PickLong
-                HubLocated
                 Notes
                 Status
                 Driver{
@@ -243,7 +260,6 @@ export default class TabOneScreen extends Component {
                 PickAddress: res.PickAddress,
                 PickLat: res.PickLat,
                 PickLong: res.PickLong,
-                HubLocated: res.HubLocated,
                 Notes: res.Notes,
                 Status: res.Status,
                 Driver: res.Driver,
@@ -274,7 +290,6 @@ export default class TabOneScreen extends Component {
                 DropLong
                 PickLat
                 PickLong
-                HubLocated
                 Notes
                 UserId {
                   FName
@@ -315,7 +330,7 @@ export default class TabOneScreen extends Component {
       data: {
           query: `
             mutation {
-              EditStatus(account: "${id}", status: "Accepted", rider: "${this.state.userId}"){
+              EditStatus(account: "${id}", status: "Accepted", rider: "${this.state.userId}", hub: "${this.state.hubStation}"){
                 Status
               }  
             }
@@ -409,7 +424,6 @@ export default class TabOneScreen extends Component {
                               <Card.Divider/>
                               {/* <Text style={{marginBottom: 10, color: 'black'}}>{item.HubLocated}</Text> */}
                               {/* <Text style={{marginBottom: 10, color: 'black'}}>{JSON.stringify(item)}</Text> */}
-                              <Text h4 style={{ color: 'black'}}>Hub: {item.HubLocated}</Text>
                               <Text h4 style={{ color: 'black'}}>Email: {item.UserId.Email}</Text>
                               <Text h4 style={{ color: 'black'}}>Extra Notes: {item.Notes == "null" ? "No extra notes" : item.Notes}</Text>
 
